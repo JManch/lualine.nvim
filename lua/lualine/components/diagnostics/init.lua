@@ -52,7 +52,6 @@ end
 
 function M:update_status()
   local bufnr = vim.api.nvim_get_current_buf()
-  local diagnostics_count
   local result = {}
   if self.options.update_in_insert or vim.api.nvim_get_mode().mode:sub(1, 1) ~= 'i' then
     local error_count, warning_count, info_count, hint_count = 0, 0, 0, 0
@@ -64,16 +63,16 @@ function M:update_status()
       info_count = info_count + data.info
       hint_count = hint_count + data.hint
     end
-    diagnostics_count = {
+    self.diagnostics_count = {
       error = error_count,
       warn = warning_count,
       info = info_count,
       hint = hint_count,
     }
     -- Save count for insert mode
-    self.last_diagnostics_count[bufnr] = diagnostics_count
+    self.last_diagnostics_count[bufnr] = self.diagnostics_count
   else -- Use cached count in insert mode with update_in_insert disabled
-    diagnostics_count = self.last_diagnostics_count[bufnr] or { error = 0, warn = 0, info = 0, hint = 0 }
+    self.diagnostics_count = self.last_diagnostics_count[bufnr] or { error = 0, warn = 0, info = 0, hint = 0 }
   end
 
   local always_visible = false
@@ -92,16 +91,16 @@ function M:update_status()
     end
     local previous_section, padding
     for _, section in ipairs(self.options.sections) do
-      if diagnostics_count[section] ~= nil and (always_visible or diagnostics_count[section] > 0) then
+      if self.diagnostics_count[section] ~= nil and (always_visible or self.diagnostics_count[section] > 0) then
         padding = previous_section and (bgs[previous_section] ~= bgs[section]) and ' ' or ''
         previous_section = section
-        table.insert(result, colors[section] .. padding .. self.symbols[section] .. diagnostics_count[section])
+        table.insert(result, colors[section] .. padding .. self.symbols[section] .. self.diagnostics_count[section])
       end
     end
   else
     for _, section in ipairs(self.options.sections) do
-      if diagnostics_count[section] ~= nil and (always_visible or diagnostics_count[section] > 0) then
-        table.insert(result, self.symbols[section] .. diagnostics_count[section])
+      if self.diagnostics_count[section] ~= nil and (always_visible or self.diagnostics_count[section] > 0) then
+        table.insert(result, self.symbols[section] .. self.diagnostics_count[section])
       end
     end
   end
