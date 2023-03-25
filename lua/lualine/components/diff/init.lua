@@ -59,8 +59,8 @@ end
 
 -- Function that runs every time statusline is updated
 function M:update_status(is_focused)
-  local git_diff = modules.git_diff.get_sign_count((not is_focused and vim.api.nvim_get_current_buf()))
-  if git_diff == nil then
+  self.git_diff = modules.git_diff.get_sign_count((not is_focused and vim.api.nvim_get_current_buf()))
+  if self.git_diff == nil then
     return ''
   end
 
@@ -75,11 +75,11 @@ function M:update_status(is_focused)
   local result = {}
   -- loop though data and load available sections in result table
   for _, name in ipairs { 'added', 'modified', 'removed' } do
-    if git_diff[name] and git_diff[name] > 0 then
+    if self.git_diff[name] and self.git_diff[name] > 0 then
       if self.options.colored then
-        table.insert(result, colors[name] .. self.options.symbols[name] .. git_diff[name])
+        table.insert(result, colors[name] .. self.options.symbols[name] .. self.git_diff[name])
       else
-        table.insert(result, self.options.symbols[name] .. git_diff[name])
+        table.insert(result, self.options.symbols[name] .. self.git_diff[name])
       end
     end
   end
